@@ -1,13 +1,22 @@
 #!/usr/bin/env python
+#
+# (try to) convert an "ABCD" datacard file to pure "A" datacards
+# Uses some assumptions about structure and naming!!!
+#
 import re
-import sys
+import os,sys
 from math import sqrt
 from copy import deepcopy
 from optparse import OptionParser
 from HiggsAnalysis.CombinedLimit.DatacardParser import *
 from cardFileWriter import cardFileWriter
 
-parser = OptionParser(usage="usage: %prog [options] in.root  \nrun with --help to get list of options")
+parser = OptionParser()
+parser.add_option("--output", "-o", dest="output", type="str", \
+                      help="output file name (default=cards-AbcdToA.txt", \
+                      default="cards-AbcdToA.txt")
+parser.add_option("--force", "-f", dest="force", default=False, action="store_true", \
+                      help="replace existing output file (default=False)")
 (options, args) = parser.parse_args()
 if len(args) == 0:
     parser.print_usage()
@@ -183,38 +192,38 @@ for b in dc.bins:
 #                    print "Changing exp for",b,p,rp,"from",dc.exp[b][p],"to",rpVarDict[rp][""]
                     dc.exp[b][p] = rpVarDict[rp][""]
 
-#
-# cross checks
-#
-for b in aRegs:
-    lb = len(b)
-    assert b.endswith("S")
-    # MB CR
-    bmbcr = b[:lb-1]+"C"
-    print bmbcr
-    assert bmbcr in oRegs
-    print bmbcr,int(dc.obs[bmbcr]+0.5),sum([dc.exp[bmbcr][p] for p in dc.processes if p!="signal"])
-    # SB W CR
-    bsbwcr = "J3"+b[2:lb-1]+"C"
-    print bsbwcr,int(dc.obs[bsbwcr]+0.5),sum([dc.exp[bsbwcr][p] for p in dc.processes if p!="signal"])
-    assert bsbwcr in oRegs
-    # SB W SR
-    bsbwsr = "J3"+b[2:lb-1]+"S"
-    print bsbwsr,int(dc.obs[bsbwsr]+0.5),sum([dc.exp[bsbwsr][p] for p in dc.processes if p!="signal"])
-    assert bsbwsr in oRegs
-    # SB tt CR
-    bsbttcr = "J4"+b[2:lb-1]+"C"
-    print bsbttcr,int(dc.obs[bsbttcr]+0.5),sum([dc.exp[bsbttcr][p] for p in dc.processes if p!="signal"])
-    assert bsbttcr in oRegs
-    # SB tt SR
-    bsbttsr = "J4"+b[2:lb-1]+"S"
-    print bsbttsr,int(dc.obs[bsbttsr]+0.5),sum([dc.exp[bsbttsr][p] for p in dc.processes if p!="signal"])
-    assert bsbttsr in oRegs
+##
+## cross checks
+##
+#for b in aRegs:
+#    lb = len(b)
+#    assert b.endswith("S")
+#    # MB CR
+#    bmbcr = b[:lb-1]+"C"
+#    print bmbcr
+#    assert bmbcr in oRegs
+#    print bmbcr,int(dc.obs[bmbcr]+0.5),sum([dc.exp[bmbcr][p] for p in dc.processes if p!="signal"])
+#    # SB W CR
+#    bsbwcr = "J3"+b[2:lb-1]+"C"
+#    print bsbwcr,int(dc.obs[bsbwcr]+0.5),sum([dc.exp[bsbwcr][p] for p in dc.processes if p!="signal"])
+#    assert bsbwcr in oRegs
+#    # SB W SR
+#    bsbwsr = "J3"+b[2:lb-1]+"S"
+#    print bsbwsr,int(dc.obs[bsbwsr]+0.5),sum([dc.exp[bsbwsr][p] for p in dc.processes if p!="signal"])
+#    assert bsbwsr in oRegs
+#    # SB tt CR
+#    bsbttcr = "J4"+b[2:lb-1]+"C"
+#    print bsbttcr,int(dc.obs[bsbttcr]+0.5),sum([dc.exp[bsbttcr][p] for p in dc.processes if p!="signal"])
+#    assert bsbttcr in oRegs
+#    # SB tt SR
+#    bsbttsr = "J4"+b[2:lb-1]+"S"
+#    print bsbttsr,int(dc.obs[bsbttsr]+0.5),sum([dc.exp[bsbttsr][p] for p in dc.processes if p!="signal"])
+#    assert bsbttsr in oRegs
 
-    p = "W"
-    print "Cross check :",b,dc.exp[bsbwsr][p]/dc.exp[bsbwcr][p]*dc.exp[bmbcr][p]*allParsByPar["k"+b+p][0],dc.exp[b][p]
-    p = "tt"
-    print "Cross check :",b,dc.exp[bsbttsr][p]/dc.exp[bsbttcr][p]*dc.exp[bmbcr][p]*allParsByPar["k"+b+p][0],dc.exp[b][p]
+#    p = "W"
+#    print "Cross check :",b,dc.exp[bsbwsr][p]/dc.exp[bsbwcr][p]*dc.exp[bmbcr][p]*allParsByPar["k"+b+p][0],dc.exp[b][p]
+#    p = "tt"
+#    print "Cross check :",b,dc.exp[bsbttsr][p]/dc.exp[bsbttcr][p]*dc.exp[bmbcr][p]*allParsByPar["k"+b+p][0],dc.exp[b][p]
 
 
 #
@@ -342,9 +351,8 @@ for nuis in revRpVarDict.keys():
     for b,p in revRpVarDict[nuis]:
         cfw.specifyUncertainty(nuis,b,p,1+revRpVarDict[nuis][(b,p)])
         
-#for rp in rpVarDict:
-#    if 
-#    print rp,rpVarDict[rp]
 
-
-cfw.writeToFile("tmpAbcdToA.txt")
+if options.force or ( not os.path.exists(options.output) ):
+    cfw.writeToFile(options.output)
+else:
+    print "Output file",options.output,"exists"
