@@ -20,12 +20,13 @@ BEGIN{
     next;
 }
 {
-    if (rates==1 && NF==(5*nb+2) ) {
+    if (rates==1 && ( NF==(5*nb+2) || ( $2=="gmN" && NF==(5*nb+3) ) ) ) {
 	line = substr($0,0,30);
 	for (i=0;i<nb;++i) {
 	    line = line "   ";
 	    for (j=0;j<5;++j) {
-		n = 5*i + j + 3
+		n = 5*i + j + 3;
+		if ( $2=="gmN" )  n += 1;
 		f = $n;
 		if (f!="-") {
 		    line = line "x";

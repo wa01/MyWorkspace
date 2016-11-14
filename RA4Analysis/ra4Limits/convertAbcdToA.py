@@ -282,13 +282,13 @@ for b in oRegs:
                 proc = "W"
             else:
                 proc = "tt"
-            print b,dc.obs[b],sum([dc.exp[b][p] for p in dc.processes if p!="signal"]),dc.exp[b][proc]
+#            print b,dc.obs[b],sum([dc.exp[b][p] for p in dc.processes if p!="signal"]),dc.exp[b][proc]
 #            n = dc.obs[b]/sum([dc.exp[b][p] for p in dc.processes if p!="signal"])*dc.exp[b][proc]
             n = dc.obs[b]
             n = max(int(n+0.5),1)
             cfw.addUncertainty(sname,"gmN",n)
             for a in aRegs:
-                if a[2:-1]==b[2:-1]:
+                if a[2:]==b[2:]:
                     cfw.specifyUncertainty(sname,a,proc,dc.exp[a][proc]/n)
     else:
         if b.startswith("J3") or b.startswith("J4"):
@@ -305,7 +305,8 @@ for b in oRegs:
                 if a[2:-1]==b[2:-1]:
                     cfw.specifyUncertainty(sname,a,proc,1+1./sqrt(n))
         else:
-            assert b[:-1]+"S" in aRegs
+            a = b[:-1] + "S"
+            assert a in aRegs
             sname = "stat" + b
             n = dc.obs[b]
             n = max(n,1)
